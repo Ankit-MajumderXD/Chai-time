@@ -1,0 +1,35 @@
+{
+  "name": "chai-time",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "generate": "cargo run -p gen-bindings -- --out-dir src/module_bindings --module-path ../spacetimedb && prettier --write src/module_bindings",
+    "spacetime:generate": "spacetime generate --lang typescript --out-dir src/module_bindings --module-path ../spacetimedb",
+    "spacetime:publish:local": "spacetime publish --module-path ../spacetimedb --server local",
+    "spacetime:publish": "spacetime publish --module-path ../spacetimedb --server maincloud",
+    "e2e": "tsc scripts/e2e.ts --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck --outDir .e2e-out && node -e \"require('fs').writeFileSync('.e2e-out/package.json','{\\\"type\\\":\\\"commonjs\\\"}')\" && node .e2e-out/scripts/e2e.js"
+  },
+  "dependencies": {
+    "@react-three/fiber": "^8.18.0",
+    "emoji-picker-react": "^4.20.1",
+    "framer-motion": "^11.18.2",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "spacetimedb": "2.10.*",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@types/three": "^0.169.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "typescript": "~5.6.2",
+    "vite": "^7.1.5"
+  }
+}

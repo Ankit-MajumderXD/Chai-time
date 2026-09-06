@@ -1,0 +1,30 @@
+node_modules
+dist
+build
+*.log
+
+.DS_Store
+
+# Local environment overrides (committed: .env.production, .env.example)
+.env
+.env.local
+.env.*.local
+
+# SpacetimeDB local config
+spacetime.local.json
+
+# Build / tooling artefacts
+.vite
+.e2e-out
+.ct-out
+.at-out
+.vf-out
+.vpr
+.sc
+*.tsbuildinfo
+
+# Packaged build for hand-off (regenerate with `npm run build`)
+chai-time-dist.zip
+
+# Editor / assistant local state
+.claude/
