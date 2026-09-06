@@ -107,12 +107,6 @@ export const media = table(
     /** 'photo' | 'video' | 'voice' */
     kind: t.string(),
     url: t.string(),
-    /**
-     * Video only: a still frame (JPEG) grabbed at upload time, so the UI has
-     * something to show before the clip is tapped. Empty for photos and voice,
-     * and for video rows written before this column existed.
-     */
-    posterUrl: t.string().default(''),
     mimeType: t.string(),
     width: t.u32(),
     height: t.u32(),
@@ -121,6 +115,13 @@ export const media = table(
     /** Voice only: one base-36 character per waveform bar. */
     waveform: t.string(),
     createdAt: t.timestamp(),
+    /**
+     * Video only: a still frame (JPEG) grabbed at upload time, so the UI has
+     * something to show before the clip is tapped. Empty for photos and voice,
+     * and for video rows written before this column existed. Appended last so
+     * the schema change is a plain additive migration.
+     */
+    posterUrl: t.string().default(''),
   }
 );
 
@@ -385,9 +386,10 @@ export const roast_line_library = table(
     category: t.string(),
     /** 'mild' | 'spicy' | 'savage' */
     heatLevel: t.string().index('btree'),
-    /** 'fire' | 'devil' | 'skull' | 'clown' — the visual style it's filed under. */
-    style: t.string().default('fire'),
     text: t.string(),
+    /** 'fire' | 'devil' | 'skull' | 'clown' — the visual style it's filed under.
+     *  Appended last: additive migration only. */
+    style: t.string().default('fire'),
   }
 );
 
@@ -412,8 +414,9 @@ export const roast_reaction = table(
     customText: t.string(),
     /** 'mild' | 'spicy' | 'savage' — drives how hot the send animation runs. */
     heatLevel: t.string(),
-    /** 'fire' | 'devil' | 'skull' | 'clown' — the emoji badge + landing effect. */
-    style: t.string().default('fire'),
     createdAt: t.timestamp(),
+    /** 'fire' | 'devil' | 'skull' | 'clown' — the emoji badge + landing effect.
+     *  Appended last: additive migration only. */
+    style: t.string().default('fire'),
   }
 );

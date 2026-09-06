@@ -14,6 +14,6 @@ export default __t.row({
   id: __t.u64().primaryKey(),
   category: __t.string(),
   heatLevel: __t.string().name("heat_level"),
-  style: __t.string(),
   text: __t.string(),
+  style: __t.string(),
 });

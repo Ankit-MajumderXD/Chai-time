@@ -16,7 +16,6 @@ export default __t.row({
   memberId: __t.u64().name("member_id"),
   kind: __t.string(),
   url: __t.string(),
-  posterUrl: __t.string().name("poster_url"),
   mimeType: __t.string().name("mime_type"),
   width: __t.u32(),
   height: __t.u32(),
@@ -24,4 +23,5 @@ export default __t.row({
   sizeBytes: __t.u32().name("size_bytes"),
   waveform: __t.string(),
   createdAt: __t.timestamp().name("created_at"),
+  posterUrl: __t.string().name("poster_url"),
 });

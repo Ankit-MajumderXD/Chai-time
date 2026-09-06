@@ -40,7 +40,6 @@ export const Media = __t.object("Media", {
   memberId: __t.u64(),
   kind: __t.string(),
   url: __t.string(),
-  posterUrl: __t.string(),
   mimeType: __t.string(),
   width: __t.u32(),
   height: __t.u32(),
@@ -48,6 +47,7 @@ export const Media = __t.object("Media", {
   sizeBytes: __t.u32(),
   waveform: __t.string(),
   createdAt: __t.timestamp(),
+  posterUrl: __t.string(),
 });
 export type Media = __Infer<typeof Media>;
 
@@ -115,8 +115,8 @@ export const RoastLineLibrary = __t.object("RoastLineLibrary", {
   id: __t.u64(),
   category: __t.string(),
   heatLevel: __t.string(),
-  style: __t.string(),
   text: __t.string(),
+  style: __t.string(),
 });
 export type RoastLineLibrary = __Infer<typeof RoastLineLibrary>;
 
@@ -127,8 +127,8 @@ export const RoastReaction = __t.object("RoastReaction", {
   lineId: __t.u64(),
   customText: __t.string(),
   heatLevel: __t.string(),
-  style: __t.string(),
   createdAt: __t.timestamp(),
+  style: __t.string(),
 });
 export type RoastReaction = __Infer<typeof RoastReaction>;
 

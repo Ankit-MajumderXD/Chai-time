@@ -17,6 +17,6 @@ export default __t.row({
   lineId: __t.u64().name("line_id"),
   customText: __t.string().name("custom_text"),
   heatLevel: __t.string().name("heat_level"),
-  style: __t.string(),
   createdAt: __t.timestamp().name("created_at"),
+  style: __t.string(),
 });
