@@ -1886,7 +1886,14 @@
 
 .fire-list__who { font-weight: 700; color: var(--text-secondary); flex: 0 0 auto; }
 .fire-list__text { flex: 1; min-width: 0; color: var(--text-primary); }
-.fire-list__heat { flex: 0 0 auto; filter: drop-shadow(0 0 4px var(--heat-hue, #ff7a3d)); }
+.fire-list__heat {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--rb-hue, #ff7a3d) 55%, transparent));
+}
+.fire-list__heat-flames { font-size: 0.7rem; }
 
 .roast-burst {
   position: absolute;
@@ -1977,27 +1984,37 @@
   gap: var(--s-3);
 }
 
-.roast-react__tabs {
+.roast-react__styles {
   display: flex;
   gap: var(--s-2);
 }
 
-.roast-react__tab {
+.roast-react__style {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: var(--s-2) 0;
+  gap: 3px;
+  padding: var(--s-3) 0 var(--s-2);
   border-radius: var(--r-md);
   background: var(--bg-sink);
   color: var(--text-secondary);
+  transition: background var(--d-fast) var(--ease-out);
 }
 
-.roast-react__tab[data-active='true'] {
-  background: color-mix(in srgb, var(--heat-hue) 16%, var(--surface));
+.roast-react__style-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform var(--d-fast) var(--ease-spring);
+}
+
+.roast-react__style[data-active='true'] {
+  background: color-mix(in srgb, var(--rb-hue) 16%, var(--surface));
   color: var(--text-primary);
-  box-shadow: inset 0 0 0 1.5px var(--heat-hue);
+  box-shadow: inset 0 0 0 1.5px var(--rb-hue);
+}
+.roast-react__style[data-active='true'] .roast-react__style-emoji {
+  transform: scale(1.18) rotate(-6deg);
 }
 
 .roast-react__chips {
@@ -2009,14 +2026,23 @@
 }
 
 .roast-react__chip {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
   text-align: left;
   padding: var(--s-3);
   border-radius: var(--r-md);
   background: var(--surface);
   border: 1px solid var(--hairline);
-  border-left: 3px solid var(--heat-hue, #ff7a3d);
+  border-left: 3px solid var(--rb-hue, #ff7a3d);
   font: var(--t-sm, 500 0.875rem/1.4 var(--font-ui));
   color: var(--text-primary);
+}
+
+.roast-react__chip-heat {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  filter: drop-shadow(0 0 3px var(--heat-hue, #ff7a3d));
 }
 
 .roast-react__own {

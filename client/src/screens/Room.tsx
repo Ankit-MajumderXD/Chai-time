@@ -40,7 +40,7 @@ import { useRoasts } from '../data/useRoasts';
 import { useRoastReactions } from '../data/useRoastReactions';
 import { useRoomPrompt } from '../data/usePrompts';
 import { useVoice } from '../data/useVoice';
-import type { Heat } from '../lib/roastLines';
+import type { Heat, RoastStyle } from '../lib/roastLines';
 import { useTypingPing, useViewingRoom } from '../data/usePresence';
 import { call, useConn } from '../data/db';
 import { useNow } from '../data/useNow';
@@ -69,7 +69,12 @@ export function Room({ code }: { code: string }) {
   const [replyTo, setReplyTo] = useState<bigint | null>(null);
   const [roastMomentId, setRoastMomentId] = useState<bigint | null>(null);
   const [fireMomentId, setFireMomentId] = useState<bigint | null>(null);
-  const [fireBurst, setFireBurst] = useState<{ momentId: bigint; heat: Heat; nonce: number } | null>(null);
+  const [fireBurst, setFireBurst] = useState<{
+    momentId: bigint;
+    style: RoastStyle;
+    heat: Heat;
+    nonce: number;
+  } | null>(null);
   const [muted, setMuted] = useState(() => readMuted().includes(code));
 
   const roomId = room.room?.id;
@@ -121,10 +126,16 @@ export function Room({ code }: { code: string }) {
   const deleteRoast = (roastId: bigint) =>
     void call(conn?.reducers.deleteRoast({ roastId }), fail);
 
-  const sendFireReaction = (momentId: bigint, lineId: bigint, customText: string, heat: Heat) => {
-    setFireBurst({ momentId, heat, nonce: Date.now() });
+  const sendFireReaction = (
+    momentId: bigint,
+    lineId: bigint,
+    customText: string,
+    heat: Heat,
+    style: RoastStyle
+  ) => {
+    setFireBurst({ momentId, style, heat, nonce: Date.now() });
     void call(
-      conn?.reducers.sendRoastReaction({ momentId, lineId, customText, heatLevel: heat }),
+      conn?.reducers.sendRoastReaction({ momentId, lineId, customText, heatLevel: heat, style }),
       fail
     );
   };
@@ -479,7 +490,7 @@ export function Room({ code }: { code: string }) {
                       onRoastReact={() => setFireMomentId(view.moment.id)}
                       roastBurst={
                         fireBurst && fireBurst.momentId === view.moment.id
-                          ? { heat: fireBurst.heat, nonce: fireBurst.nonce }
+                          ? { style: fireBurst.style, heat: fireBurst.heat, nonce: fireBurst.nonce }
                           : undefined
                       }
                       onReact={(emoji) => react(view.moment.id, emoji)}
@@ -733,11 +744,14 @@ export function Room({ code }: { code: string }) {
       <RoastReactionSheet
         open={fireMomentId !== null}
         onClose={() => setFireMomentId(null)}
+        mineStyle={
+          fireMomentId !== null ? roastReactions.forMoment(fireMomentId).mine?.style : undefined
+        }
         mineHeat={
           fireMomentId !== null ? roastReactions.forMoment(fireMomentId).mine?.heat : undefined
         }
-        onSend={(lineId, customText, heat) => {
-          if (fireMomentId !== null) sendFireReaction(fireMomentId, lineId, customText, heat);
+        onSend={(lineId, customText, heat, style) => {
+          if (fireMomentId !== null) sendFireReaction(fireMomentId, lineId, customText, heat, style);
         }}
       />
     </div>

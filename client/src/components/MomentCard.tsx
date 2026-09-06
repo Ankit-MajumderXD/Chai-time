@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar } from './Avatar';
 import { VoiceNote } from './VoiceNote';
 import { EmojiPopover } from './EmojiPopover';
-import { FireBurst } from './FireBurst';
+import { RoastBurst } from './RoastBurst';
 import { itemVariants, pressable, spring } from '../design/motion';
 import { firstName, timeAgo } from '../lib/format';
 import { formatDuration } from '../lib/audio';
@@ -20,7 +20,7 @@ import { debug } from '../lib/log';
 import { useNow } from '../data/useNow';
 import type { MomentView } from '../data/useRoom';
 import type { MomentRoastReactions } from '../data/useRoastReactions';
-import { HEATS, type Heat } from '../lib/roastLines';
+import { HEATS, ROAST_STYLES, type Heat, type RoastStyle } from '../lib/roastLines';
 
 interface Props {
   view: MomentView;
@@ -37,7 +37,7 @@ interface Props {
   roastReactions?: MomentRoastReactions;
   onRoastReact?: () => void;
   /** Bumped when this client just sent a roast reaction — plays the burst. */
-  roastBurst?: { heat: Heat; nonce: number };
+  roastBurst?: { style: RoastStyle; heat: Heat; nonce: number };
 }
 
 export const MomentCard = memo(function MomentCard({
@@ -57,7 +57,7 @@ export const MomentCard = memo(function MomentCard({
   const [showPicker, setShowPicker] = useState(false);
   const [bursts, setBursts] = useState<Array<{ id: number; emoji: string }>>([]);
   const [roastExpanded, setRoastExpanded] = useState(false);
-  const [fire, setFire] = useState<{ heat: Heat; nonce: number } | null>(null);
+  const [fire, setFire] = useState<{ style: RoastStyle; heat: Heat; nonce: number } | null>(null);
   const burstId = useRef(0);
   const lastTap = useRef(0);
 
@@ -265,33 +265,37 @@ export const MomentCard = memo(function MomentCard({
             >
               🔥
             </motion.button>
-            <AnimatePresence>{fire && <FireBurst key={fire.nonce} heat={fire.heat} />}</AnimatePresence>
+            <AnimatePresence>
+              {fire && <RoastBurst key={fire.nonce} style={fire.style} heat={fire.heat} />}
+            </AnimatePresence>
           </span>
 
           {roastReactions && roastReactions.count > 0 && (
             <motion.button
               type="button"
               className="fire-badge"
-              data-flare={roastReactions.allHeats}
+              data-flare={roastReactions.allStyles}
               onClick={() => setRoastExpanded((v) => !v)}
               whileTap={{ scale: 0.94 }}
               transition={spring.snappy}
               aria-expanded={roastExpanded}
+              aria-label={roastReactions.byStyle
+                .map(({ style, count }) => `${ROAST_STYLES[style].label} ${count}`)
+                .join(', ')}
             >
-              <span className="fire-badge__flames">
-                {roastReactions.heats.map((h) => (
-                  <span key={h} style={{ ['--heat-hue' as string]: HEATS[h].hue }}>🔥</span>
-                ))}
-              </span>
-              <motion.span
-                key={roastReactions.count}
-                className="fire-badge__count"
-                initial={{ y: -5, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={spring.pop}
-              >
-                {roastReactions.count}
-              </motion.span>
+              {roastReactions.byStyle.map(({ style, count }) => (
+                <motion.span
+                  key={`${style}-${count}`}
+                  className="fire-badge__style"
+                  style={{ ['--rb-hue' as string]: ROAST_STYLES[style].hue }}
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={spring.pop}
+                >
+                  <span>{ROAST_STYLES[style].emoji}</span>
+                  <b>×{count}</b>
+                </motion.span>
+              ))}
             </motion.button>
           )}
         </div>
@@ -311,8 +315,13 @@ export const MomentCard = memo(function MomentCard({
                 <Avatar name={rr.member?.displayName ?? 'Someone'} src={rr.member?.avatarUrl} size={22} />
                 <span className="fire-list__who">{firstName(rr.member?.displayName ?? 'Someone')}</span>
                 <span className="fire-list__text truncate">{rr.text}</span>
-                <span className="fire-list__heat" style={{ ['--heat-hue' as string]: HEATS[rr.heat].hue }}>
-                  {HEATS[rr.heat].flames}
+                <span
+                  className="fire-list__heat"
+                  style={{ ['--rb-hue' as string]: ROAST_STYLES[rr.style].hue }}
+                  title={`${ROAST_STYLES[rr.style].label} · ${HEATS[rr.heat].label}`}
+                >
+                  {ROAST_STYLES[rr.style].emoji}
+                  <span className="fire-list__heat-flames">{HEATS[rr.heat].flames}</span>
                 </span>
               </li>
             ))}

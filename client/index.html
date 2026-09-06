@@ -2,10 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#FAF8F5" />
     <meta name="color-scheme" content="light" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -20,7 +17,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Non-render-blocking: the boot skeleton paints without waiting for fonts. -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@500;600;700&display=swap"
       rel="stylesheet"
       media="print"
       onload="this.media='all'"
@@ -88,6 +85,13 @@
           position: relative;
           overflow: hidden;
         }
+        #boot .sk-kicker { width: 96px; height: 13px; margin-bottom: 10px; }
+        #boot .sk-title { width: 168px; height: 30px; margin-bottom: 26px; }
+        #boot .sk-bar { width: 100%; height: 52px; border-radius: 26px; margin-bottom: 30px; }
+        #boot .sk-label { width: 88px; height: 15px; margin-bottom: 16px; }
+        #boot .sk-face { width: 56px; height: 56px; }
+        #boot .sk-card { width: 100%; height: 210px; border-radius: 28px; margin-bottom: 18px; }
+        #boot .sk-card:last-child { margin-bottom: 0; }
         #boot .sk::after {
           content: '';
           position: absolute;
@@ -115,6 +119,7 @@
           display: flex;
           gap: 14px;
           align-items: center;
+          margin-bottom: 34px;
         }
         #boot .circle {
           border-radius: 999px;
@@ -122,20 +127,20 @@
         }
       </style>
       <div id="boot" aria-label="Loading Chai Time" role="status">
-        <div class="sk" style="width: 96px; height: 13px; margin-bottom: 10px"></div>
-        <div class="sk" style="width: 168px; height: 30px; margin-bottom: 26px"></div>
-        <div class="sk" style="width: 100%; height: 52px; border-radius: 26px; margin-bottom: 30px"></div>
-        <div class="sk" style="width: 88px; height: 15px; margin-bottom: 16px"></div>
-        <div class="row" style="margin-bottom: 34px">
-          <div class="sk circle" style="width: 56px; height: 56px"></div>
-          <div class="sk circle" style="width: 56px; height: 56px"></div>
-          <div class="sk circle" style="width: 56px; height: 56px"></div>
-          <div class="sk circle" style="width: 56px; height: 56px"></div>
-          <div class="sk circle" style="width: 56px; height: 56px"></div>
+        <div class="sk sk-kicker"></div>
+        <div class="sk sk-title"></div>
+        <div class="sk sk-bar"></div>
+        <div class="sk sk-label"></div>
+        <div class="row">
+          <div class="sk circle sk-face"></div>
+          <div class="sk circle sk-face"></div>
+          <div class="sk circle sk-face"></div>
+          <div class="sk circle sk-face"></div>
+          <div class="sk circle sk-face"></div>
         </div>
-        <div class="sk" style="width: 84px; height: 15px; margin-bottom: 16px"></div>
-        <div class="sk" style="width: 100%; height: 210px; border-radius: 28px; margin-bottom: 18px"></div>
-        <div class="sk" style="width: 100%; height: 210px; border-radius: 28px"></div>
+        <div class="sk sk-label"></div>
+        <div class="sk sk-card"></div>
+        <div class="sk sk-card"></div>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
