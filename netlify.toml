@@ -1,0 +1,24 @@
+# Netlify build config.
+#
+# This repo is a monorepo: the deployable web app is in `client/` (Vite + React),
+# and `spacetimedb/` is the backend module (deployed separately with
+# `spacetime publish`, not by Netlify). Without `base` set, Netlify builds at the
+# repo root — where there is no app — and serves an empty site ("Page not found").
+
+[build]
+  base = "client"
+  command = "npm run build"
+  # Relative to `base`, so this is client/dist
+  publish = "dist"
+
+[build.environment]
+  # Vite 7 needs Node >= 20.19 / 22.12
+  NODE_VERSION = "22"
+
+# Single-page-app fallback: any path that isn't a real file serves index.html so
+# the client router handles it (invite links, /r/CODE, a hard refresh deep in the
+# app). Mirrors client/public/_redirects; kept here as the authoritative copy.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
