@@ -847,6 +847,8 @@ export const setRoastMode = spacetimedb.reducer(
   (ctx, { roomId, enabled }) => {
     const { person: me, room: current } = requireOwner(ctx, roomId);
     if (current.roastMode === enabled) return;
+    // Make sure every roast style's lines exist before anyone opens the picker.
+    if (enabled) ensureContentSeeded(ctx);
     ctx.db.room.id.update({ ...current, roastMode: enabled });
     const owner = memberIn(ctx, roomId, me.id);
     logEvent(
@@ -943,6 +945,7 @@ export const sendRoastReaction = spacetimedb.reducer(
     const target = ctx.db.moment.id.find(momentId);
     if (!target) throw new SenderError('That moment is gone');
     const { member } = requireMembership(ctx, target.roomId);
+    ensureContentSeeded(ctx);
 
     const heat = ['mild', 'spicy', 'savage'].includes(heatLevel) ? heatLevel : 'mild';
     let badge = ROAST_STYLES.includes(style) ? style : 'fire';
