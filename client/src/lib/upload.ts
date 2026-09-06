@@ -47,9 +47,19 @@ export const NO_MEDIA: MediaRef = {
 
 const PRESIGN_ENDPOINT = import.meta.env.VITE_MEDIA_UPLOAD_URL as string | undefined;
 
-/** Data URLs travel through the database, so keep them phone-sized. */
-export const MAX_INLINE_BYTES = 3_200_000;
-const MAX_PHOTO_EDGE = 1280;
+/**
+ * When there's no object storage, media rides through the database as a data
+ * URL — a reducer argument. SpacetimeDB Maincloud silently drops reducer calls
+ * whose args get much past ~0.8 MB (the send just never comes back), so the cap
+ * here is deliberately conservative: it's the length of the *data-URL string*,
+ * roughly 1.37x the underlying bytes. Photos are compressed to fit under it;
+ * clips are recorded at a low enough bitrate to fit; anything picked from the
+ * gallery that's still over is rejected with a message rather than hung.
+ */
+export const MAX_INLINE_BYTES = 620_000;
+const MAX_PHOTO_EDGE = 1080;
+/** Leave headroom under MAX_INLINE_BYTES for the caption, poster, etc. */
+const PHOTO_BYTE_BUDGET = 460_000;
 
 export function usingObjectStorage(): boolean {
   return !!PRESIGN_ENDPOINT;
@@ -143,22 +153,43 @@ export async function preparePhoto(source: Blob | HTMLVideoElement, mirror = fal
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error("This browser wouldn't give us a canvas.");
 
-  if (mirror) {
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
+  const paint = () => {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (mirror) {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(draw, 0, 0, canvas.width, canvas.height);
+  };
+  paint();
+
+  const encode = (quality: number) =>
+    new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("That photo didn't save."))),
+        'image/jpeg',
+        quality
+      )
+    );
+
+  // Fit under the inline budget: drop quality first, then dimensions. Data URLs
+  // that overshoot get dropped by the server, so this has to land.
+  let blob = await encode(0.72);
+  for (const quality of [0.6, 0.48, 0.38]) {
+    if (blob.size <= PHOTO_BYTE_BUDGET) break;
+    blob = await encode(quality);
   }
-  ctx.drawImage(draw, 0, 0, canvas.width, canvas.height);
+  while (blob.size > PHOTO_BYTE_BUDGET && Math.max(canvas.width, canvas.height) > 480) {
+    canvas.width = Math.round(canvas.width * 0.8);
+    canvas.height = Math.round(canvas.height * 0.8);
+    paint();
+    blob = await encode(0.5);
+  }
+
   if ('close' in draw && typeof (draw as ImageBitmap).close === 'function') {
     (draw as ImageBitmap).close();
   }
-
-  const blob = await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error("That photo didn't save."))),
-      'image/jpeg',
-      0.74
-    )
-  );
 
   return { blob, width: canvas.width, height: canvas.height };
 }
@@ -257,7 +288,19 @@ export function tooBig(ref: MediaRef): boolean {
  */
 export async function prepareFile(file: File): Promise<MediaRef> {
   if (file.type.startsWith('video')) {
+    // A gallery clip can't be transcoded in the browser. If it won't fit
+    // through the database, say so now instead of hanging on send later.
+    if (!usingObjectStorage() && file.size > MAX_INLINE_BYTES * 0.72) {
+      throw new Error(
+        'That video is too big to send here — record a short one in the app, or trim it under ~5 seconds.'
+      );
+    }
     const ref = await putMedia(file, 'video', { mimeType: file.type });
+    if (tooBig(ref)) {
+      throw new Error(
+        'That video is too big to send here — record a short one in the app, or trim it under ~5 seconds.'
+      );
+    }
     const probe = await probeVideo(ref.url);
     const posterUrl = await capturePoster(ref.url);
     return { ...ref, ...probe, posterUrl };

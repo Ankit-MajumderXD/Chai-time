@@ -12,7 +12,15 @@ import { riseVariants, pressable, spring } from '../design/motion';
 import { haptic } from '../lib/haptics';
 import { useRouter } from '../lib/router';
 import { useRooms } from '../data/useRooms';
-import { capturePoster, prepareFile, preparePhoto, probeVideo, putMedia, type MediaRef } from '../lib/upload';
+import {
+  capturePoster,
+  prepareFile,
+  preparePhoto,
+  probeVideo,
+  putMedia,
+  tooBig,
+  type MediaRef,
+} from '../lib/upload';
 import { useToast } from '../components/Toast';
 
 /** What the camera hands to the preview screen: a finished media reference. */
@@ -53,7 +61,10 @@ export function Camera({ code }: { code?: string }) {
     (async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 1280 } },
+          video:
+            mode === 'video'
+              ? { facingMode: facing, width: { ideal: 960 }, height: { ideal: 960 }, frameRate: { ideal: 24, max: 30 } }
+              : { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 1280 } },
           audio: mode === 'video',
         });
         if (cancelled) {
@@ -111,13 +122,26 @@ export function Camera({ code }: { code?: string }) {
     if (!stream || recording) return;
     haptic('medium');
     chunksRef.current = [];
-    const recorder = new MediaRecorder(stream, { mimeType: pickVideoMime() });
+    // Low bitrate on purpose: with no object storage the clip has to fit through
+    // the database as a data URL. ~700 kb/s over 5s ≈ 440 KB.
+    const recorder = new MediaRecorder(stream, {
+      mimeType: pickVideoMime(),
+      videoBitsPerSecond: 700_000,
+      audioBitsPerSecond: 48_000,
+    });
     recorder.ondataavailable = (e) => e.data.size && chunksRef.current.push(e.data);
     recorder.onstop = () => {
       void (async () => {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
         try {
           const ref = await putMedia(blob, 'video', { mimeType: recorder.mimeType });
+          if (tooBig(ref)) {
+            toast({
+              message: 'That clip came out too heavy — try a shorter one.',
+              tone: 'error',
+            });
+            return;
+          }
           const probe = await probeVideo(ref.url);
           const posterUrl = await capturePoster(ref.url);
           setShot({ media: { ...ref, ...probe, posterUrl } });
